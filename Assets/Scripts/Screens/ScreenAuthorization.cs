@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,17 +20,55 @@ public class ScreenAuthorization : MonoBehaviour
 	[Header("Кнопки")]
 	[SerializeField] private Button buttonBack;
 	[SerializeField] private Button buttonEnter;
+	[SerializeField] private Button buttonEnterCatcher;
 
+	private Regex regex = new Regex(@"^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$");
 
 	private void Awake()
 	{
 		buttonBack.onClick.AddListener(OnClickButtonBack);
 		buttonEnter.onClick.AddListener(OnClickButtonEnter);
+		buttonEnterCatcher.onClick.AddListener(OnClickButtonEnterCatcher);
+
+		inputFieldEmail.onValueChanged.AddListener(OnValueChangedFieldEmail);
+		inputFieldPassword.onValueChanged.AddListener(OnValueChangedFieldPassword);
 	}
 
 	private void OnEnable()
 	{
-		alertAttention.gameObject.SetActive(false);
+		inputFieldEmail.text = "";
+		inputFieldPassword.text = "";
+		buttonEnter.interactable = false;
+		buttonEnterCatcher.gameObject.SetActive(true);
+
+		HideAttention();
+	}
+
+	private void OnValueChangedFieldEmail(string value)
+	{
+		SetInteractableRegister();
+	}
+
+	private void OnValueChangedFieldPassword(string value)
+	{
+		SetInteractableRegister();
+	}
+
+	private bool ParseEmail(string email)
+	{
+		return regex.IsMatch(email);
+	}
+
+	private void SetInteractableRegister()
+	{
+		bool isSuccess = ParseEmail(inputFieldEmail.text) && inputFieldPassword.text.Length >= 8;
+		if(isSuccess)
+		{
+			HideAttention();
+		}
+
+		buttonEnterCatcher.gameObject.SetActive(!isSuccess);
+		buttonEnter.interactable = isSuccess;
 	}
 
 	private void OnClickButtonBack()
@@ -47,6 +86,21 @@ public class ScreenAuthorization : MonoBehaviour
 		}
 
 		StartCoroutine(SendRequestLogIn());
+	}
+
+	private void OnClickButtonEnterCatcher()
+	{
+		if (string.IsNullOrEmpty(inputFieldEmail.text))
+		{
+			ShowAttention("! не указана почта !");
+			return;
+		}
+
+		if(string.IsNullOrEmpty(inputFieldPassword.text))
+		{
+			ShowAttention("! не заполнен пароль !");
+			return;
+		}
 	}
 
 	private IEnumerator SendRequestLogIn()
@@ -86,6 +140,11 @@ public class ScreenAuthorization : MonoBehaviour
 	private void ShowAttention(string attentionText)
 	{
 		alertAttention.text = attentionText;
-		alertAttention.gameObject.SetActive(true);
+		alertAttention.transform.parent.gameObject.SetActive(true);
+	}
+
+	private void HideAttention()
+	{
+		alertAttention.transform.parent.gameObject.SetActive(false);
 	}
 }

@@ -143,6 +143,11 @@ public class ScreenMainMenu : MonoBehaviour
 	private void ShowAttention(string attentionText)
 	{
 		alertAttention.text = attentionText;
-		alertAttention.gameObject.SetActive(true);
+		alertAttention.transform.parent.gameObject.SetActive(true);
+	}
+
+	private void HideAttention()
+	{
+		alertAttention.transform.parent.gameObject.SetActive(false);
 	}
 }
