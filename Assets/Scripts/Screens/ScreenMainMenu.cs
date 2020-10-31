@@ -48,7 +48,23 @@ public class ScreenMainMenu : MonoBehaviour
 
 	private void OnClickButtonSos()
 	{
-		Requests.Instance.sosRequest.Send();
+		StartCoroutine(SendRequestSOS());
+	}
+
+	private IEnumerator SendRequestSOS()
+	{
+		SosRequest sos = Requests.Instance.sosRequest;
+		yield return StartCoroutine(sos.SendRequest());
+
+		switch (sos.ResponseCode)
+		{
+			case Requests.RESPONSE_CODE_SUCCESS:
+				ShowAttention("! сигнал отправлен диспетчеру !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
+				ShowAttention("! сервер неактивен !");
+				break;
+		}
 	}
 
 	private void OnClickButtonStartWork()
@@ -58,13 +74,25 @@ public class ScreenMainMenu : MonoBehaviour
 
 	private IEnumerator SendRequestStartWork()
 	{
-		yield return null;
+		WorkRequest work = Requests.Instance.workRequest;
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.START_WORK));
 
-		GeneralJava.work.Start();
-		Prefs.IsUserWork = true;
-		Prefs.DateStartWork = DateTime.Now;
-
-		SetButtonWork(true);
+		switch (work.ResponseCode)
+		{
+			case Requests.RESPONSE_CODE_SUCCESS:
+				GeneralJava.work.Start();
+				Prefs.IsUserWork = true;
+				Prefs.DateStartWork = DateTime.Now;
+				SetButtonWork(true);
+				ShowAttention("! смена началась !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_REQUEST:
+				ShowAttention("! вы уже работаете !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
+				ShowAttention("! сервер неактивен !");
+				break;
+		}
 	}
 
 	private void OnClickButtonStopWork()
@@ -72,22 +100,34 @@ public class ScreenMainMenu : MonoBehaviour
 		StartCoroutine(SendRequestStopWork());
 	}
 
+	private IEnumerator SendRequestStopWork()
+	{
+		WorkRequest work = Requests.Instance.workRequest;
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.STOP_WORK));
+
+		switch (work.ResponseCode)
+		{
+			case Requests.RESPONSE_CODE_SUCCESS:
+				GeneralJava.work.Stop();
+				Prefs.IsUserWork = false;
+				Prefs.DateStopWork = DateTime.Now;
+				Prefs.LastTimeWork = (float)(Prefs.DateStopWork - Prefs.DateStartWork).TotalHours;
+				SetButtonWork(false);
+				ShowAttention("! смена началась !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_REQUEST:
+				ShowAttention("! вы уже работаете !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
+				ShowAttention("! сервер неактивен !");
+				break;
+		}
+	}
+
 	private void SetButtonWork(bool isStart)
 	{
 		buttonStartWork.gameObject.SetActive(!isStart);
 		buttonStopWork.gameObject.SetActive(isStart);
-	}
-
-	private IEnumerator SendRequestStopWork()
-	{
-		yield return null;
-
-		GeneralJava.work.Stop();
-		Prefs.IsUserWork = false;
-		Prefs.DateStopWork = DateTime.Now;
-		Prefs.LastTimeWork = (float)(Prefs.DateStopWork - Prefs.DateStartWork).TotalHours;
-
-		SetButtonWork(false);
 	}
 
 	private void Hide()
@@ -98,5 +138,11 @@ public class ScreenMainMenu : MonoBehaviour
 	private void ShowNextScreen(GameObject nextScreen)
 	{
 		nextScreen.SetActive(true);
+	}
+
+	private void ShowAttention(string attentionText)
+	{
+		alertAttention.text = attentionText;
+		alertAttention.gameObject.SetActive(true);
 	}
 }

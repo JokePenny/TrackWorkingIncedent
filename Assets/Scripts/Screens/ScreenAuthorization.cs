@@ -42,8 +42,7 @@ public class ScreenAuthorization : MonoBehaviour
 	{
 		if(string.IsNullOrEmpty(inputFieldEmail.text) || string.IsNullOrEmpty(inputFieldPassword.text))
 		{
-			alertAttention.text = "! Заполнены не все поля !";
-			alertAttention.gameObject.SetActive(true);
+			ShowAttention("! Заполнены не все поля !");
 			return;
 		}
 
@@ -52,10 +51,26 @@ public class ScreenAuthorization : MonoBehaviour
 
 	private IEnumerator SendRequestLogIn()
 	{
-		yield return null;
-		GeneralJava.permission.GetPermissionGeometria();
-		ShowNextScreen(screenMainMenu.gameObject);
-		Hide();
+		AuthorizationRequest authorization = Requests.Instance.authorizationRequest;
+		yield return StartCoroutine(authorization.SendRequest(inputFieldEmail.text, inputFieldPassword.text));
+
+		switch (authorization.ResponseCode)
+		{
+			case Requests.RESPONSE_CODE_SUCCESS:
+				GeneralJava.permission.GetPermissionGeometria();
+				ShowNextScreen(screenMainMenu.gameObject);
+				Hide();
+				break;
+			case Requests.RESPONSE_CODE_FORBIDEN:
+				ShowAttention("! неверный пароль !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_REQUEST:
+				ShowAttention("! пользователя с таким логином нет !");
+				break;
+			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
+				ShowAttention("! сервер неактивен !");
+				break;
+		}
 	}
 
 	private void Hide()
@@ -66,5 +81,11 @@ public class ScreenAuthorization : MonoBehaviour
 	private void ShowNextScreen(GameObject nextScreen)
 	{
 		nextScreen.SetActive(true);
+	}
+
+	private void ShowAttention(string attentionText)
+	{
+		alertAttention.text = attentionText;
+		alertAttention.gameObject.SetActive(true);
 	}
 }

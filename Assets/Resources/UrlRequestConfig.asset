@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: UrlRequestConfig
   m_EditorClassIdentifier: 
   urlSOS: https://bittech.xyz/api/emergency/add
-  url1: 
-  url2: 
-  url3: 
+  urlLogIn: https://bittech.xyz/api/auth/login
+  urlGPS: https://bittech.xyz/api/gps/add
+  urlWork: https://bittech.xyz/api/shift/add
+  urlTest: https://bittech.xyz/api/auth/test

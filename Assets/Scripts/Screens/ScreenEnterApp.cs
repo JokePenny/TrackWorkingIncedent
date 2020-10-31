@@ -12,12 +12,14 @@ public class ScreenEnterApp : MonoBehaviour
 	[SerializeField] private Button buttonRegistration;
 	[SerializeField] private Button buttonAuthorization;
 
+	[SerializeField] private bool isDebug;
+
 	private void Awake()
 	{
 		buttonRegistration.onClick.AddListener(OnClickButtonRegistration);
 		buttonAuthorization.onClick.AddListener(OnClickButtonAuthorization);
 
-		if (!string.IsNullOrEmpty(Prefs.ApiKey))
+		if (!string.IsNullOrEmpty(Prefs.ApiKey) && !isDebug)
 		{
 			ShowNextScreen(screenMainMenu.gameObject);
 			Hide();

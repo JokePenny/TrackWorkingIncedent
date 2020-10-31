@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class SosRequest : MonoBehaviour
+public class WorkRequest : MonoBehaviour
 {
-	private enum TypeSendSOS
+	public enum StatusWork
 	{
-		HAND = 1,
-		AUTHO = 2
+		START_WORK = 1,
+		STOP_WORK = 2
 	}
 
+	public string ResultLog { get; private set; }
 	public int ResponseCode { get; private set; }
 
-	public IEnumerator SendRequest()
+	public IEnumerator SendRequest(StatusWork status)
 	{
-		SOSRequestSend sos = new SOSRequestSend(TypeSendSOS.HAND, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"));
-		string jsonString = "[" + JsonUtility.ToJson(sos) + "]";
+		WorkRequestSend sos = new WorkRequestSend(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"), status);
+		string jsonString = JsonUtility.ToJson(sos);
 
-		string url = Requests.Instance.urlRequestConfig.UrlSOS;
+		string url = Requests.Instance.urlRequestConfig.UrlWork;
 
 		UnityWebRequest uwr = new UnityWebRequest(url, "POST");
 		byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(jsonString);
@@ -35,22 +35,24 @@ public class SosRequest : MonoBehaviour
 		if (uwr.isNetworkError)
 		{
 			Debug.LogError(uwr.error);
+			ResultLog = uwr.error;
 		}
-		else
+		else if (ResponseCode == Requests.RESPONSE_CODE_SUCCESS)
 		{
 			Debug.Log(uwr.downloadHandler.text);
+			ResultLog = uwr.downloadHandler.text;
 		}
 	}
 
 	[Serializable]
-	private struct SOSRequestSend
+	private struct WorkRequestSend
 	{
-		public TypeSendSOS type;
 		public string date;
-		public SOSRequestSend(TypeSendSOS type, string date)
+		public StatusWork type;
+		public WorkRequestSend(string date, StatusWork type)
 		{
-			this.type = type;
 			this.date = date;
+			this.type = type;
 		}
 	}
 }

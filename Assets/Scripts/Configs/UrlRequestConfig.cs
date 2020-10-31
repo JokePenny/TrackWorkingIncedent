@@ -6,12 +6,16 @@ using UnityEngine;
 public class UrlRequestConfig : ScriptableObject
 {
 	[SerializeField] private string urlSOS;
-	[SerializeField] private string url1;
-	[SerializeField] private string url2;
-	[SerializeField] private string url3;
+	[SerializeField] private string urlLogIn;
+	[SerializeField] private string urlGPS;
+	[SerializeField] private string urlWork;
 
-	public string GetUrlSOS()
-	{
-		return urlSOS;
-	}
+	[Header("URL для пинга")]
+	[SerializeField] private string urlTest;
+
+	public string UrlSOS => urlSOS;
+	public string UrlLogIn => urlLogIn;
+	public string UrlGPS => urlGPS;
+	public string UrlWork => urlWork;
+	public string UrlTest => urlTest;
 }

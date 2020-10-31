@@ -8,7 +8,7 @@ public class PermissionRequestJava
     {
 		if (Application.platform == RuntimePlatform.Android)
 		{
-			if (GeneralJava.PluginInstance.Call<int>("getPermissionGeometria") == 1) Debug.Log("Success getPermissionGeometria");
+			if (GeneralJava.PluginInstance.Call<bool>("getPermissionGeometria")) Debug.Log("Success getPermissionGeometria");
 			else Debug.LogError("Failed getPermissionGeometria");
 		}
 	}

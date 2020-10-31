@@ -21,6 +21,12 @@ public class Prefs
 		set { PlayerPrefs.SetString("date_stop_work", value.ToString()); }
 	}
 
+	public static DateTime DateCreatedUser
+	{
+		get { return DateTime.Parse(PlayerPrefs.GetString("date_created_user", DateTime.Now.ToString())); }
+		set { PlayerPrefs.SetString("date_created_user", value.ToString()); }
+	}
+
 	public static float LastTimeWork
 	{
 		get { return PlayerPrefs.GetFloat("last_time_work", 0f); }
