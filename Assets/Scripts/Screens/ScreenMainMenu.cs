@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -47,6 +48,7 @@ public class ScreenMainMenu : MonoBehaviour
 
 	private void OnClickButtonSos()
 	{
+		Requests.Instance.sosRequest.Send();
 	}
 
 	private void OnClickButtonStartWork()
@@ -57,37 +59,35 @@ public class ScreenMainMenu : MonoBehaviour
 	private IEnumerator SendRequestStartWork()
 	{
 		yield return null;
-		buttonStopWork.gameObject.SetActive(true);
-		buttonStartWork.gameObject.SetActive(false);
+
+		GeneralJava.work.Start();
+		Prefs.IsUserWork = true;
+		Prefs.DateStartWork = DateTime.Now;
+
+		SetButtonWork(true);
 	}
 
 	private void OnClickButtonStopWork()
 	{
 		StartCoroutine(SendRequestStopWork());
-		buttonStartWork.gameObject.SetActive(true);
-		buttonStopWork.gameObject.SetActive(false);
+	}
+
+	private void SetButtonWork(bool isStart)
+	{
+		buttonStartWork.gameObject.SetActive(!isStart);
+		buttonStopWork.gameObject.SetActive(isStart);
 	}
 
 	private IEnumerator SendRequestStopWork()
 	{
 		yield return null;
-	}
 
-	private void OnClickButtonEnter()
-	{
-		//if (string.IsNullOrEmpty(dropdownFirst.) || string.IsNullOrEmpty(inputFieldPassword.text))
-		//{
-		//	alertAttention.text = "! Заполнены не все поля !";
-		//	alertAttention.gameObject.SetActive(true);
-		//	return;
-		//}
+		GeneralJava.work.Stop();
+		Prefs.IsUserWork = false;
+		Prefs.DateStopWork = DateTime.Now;
+		Prefs.LastTimeWork = (float)(Prefs.DateStopWork - Prefs.DateStartWork).TotalHours;
 
-		StartCoroutine(SendRequestLogIn());
-	}
-
-	private IEnumerator SendRequestLogIn()
-	{
-		yield return null;
+		SetButtonWork(false);
 	}
 
 	private void Hide()

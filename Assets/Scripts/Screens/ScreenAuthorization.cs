@@ -53,6 +53,7 @@ public class ScreenAuthorization : MonoBehaviour
 	private IEnumerator SendRequestLogIn()
 	{
 		yield return null;
+		GeneralJava.permission.GetPermissionGeometria();
 		ShowNextScreen(screenMainMenu.gameObject);
 		Hide();
 	}
