@@ -14,9 +14,9 @@ public class SosRequest : MonoBehaviour
 
 	public int ResponseCode { get; private set; }
 
-	public IEnumerator SendRequest()
+	public IEnumerator SendRequest(int idConstruction)
 	{
-		SOSRequestSend sos = new SOSRequestSend(TypeSendSOS.HAND, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"));
+		SOSRequestSend sos = new SOSRequestSend(TypeSendSOS.HAND, DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"), idConstruction);
 		string jsonString = "[" + JsonUtility.ToJson(sos) + "]";
 
 		string url = Requests.Instance.urlRequestConfig.UrlSOS;
@@ -47,10 +47,12 @@ public class SosRequest : MonoBehaviour
 	{
 		public TypeSendSOS type;
 		public string date;
-		public SOSRequestSend(TypeSendSOS type, string date)
+		public int constructionId;
+		public SOSRequestSend(TypeSendSOS type, string date, int constructionId)
 		{
 			this.type = type;
 			this.date = date;
+			this.constructionId = constructionId;
 		}
 	}
 }

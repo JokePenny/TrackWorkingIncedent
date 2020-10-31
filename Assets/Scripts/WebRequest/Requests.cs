@@ -13,6 +13,7 @@ public class Requests : MonoBehaviour
 	public AuthorizationRequest authorizationRequest { get; private set; }
 	public RegistrationRequest registrationRequest { get; private set; }
 	public WorkRequest workRequest { get; private set; }
+	public DataConstructionsRequest dataConstructionsRequest { get; private set; }
 
 	private void Awake()
 	{
@@ -30,5 +31,6 @@ public class Requests : MonoBehaviour
 		authorizationRequest = GetComponent<AuthorizationRequest>();
 		registrationRequest = GetComponent<RegistrationRequest>();
 		workRequest = GetComponent<WorkRequest>();
+		dataConstructionsRequest = GetComponent<DataConstructionsRequest>();
 	}
 }

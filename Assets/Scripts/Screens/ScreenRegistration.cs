@@ -108,13 +108,19 @@ public class ScreenRegistration : MonoBehaviour
 			return;
 		}
 
+		if (!ParseEmail(inputFieldEmail.text))
+		{
+			ShowAttention("! почта неверного формата !");
+			return;
+		}
+
 		if (string.IsNullOrEmpty(inputFieldPassword.text))
 		{
 			ShowAttention("! не заполнен пароль !");
 			return;
 		}
 
-		if (inputFieldPassword.text.Length >= 8)
+		if (inputFieldPassword.text.Length < 8)
 		{
 			ShowAttention("! пароль слишком короткий !");
 			return;

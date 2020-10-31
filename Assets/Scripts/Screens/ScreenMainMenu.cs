@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static DataConstructionsRequest;
 
 public class ScreenMainMenu : MonoBehaviour
 {
@@ -13,8 +15,7 @@ public class ScreenMainMenu : MonoBehaviour
 	[SerializeField] private TextMeshProUGUI alertAttention;
 
 	[Header("Поля для заполнния")]
-	[SerializeField] private TMP_Dropdown dropdownFirst;
-	[SerializeField] private TMP_Dropdown dropdownSecond;
+	[SerializeField] private TMP_Dropdown dropdownConstructions;
 
 	[Header("Кнопки")]
 	[SerializeField] private Button buttonBack;
@@ -25,6 +26,15 @@ public class ScreenMainMenu : MonoBehaviour
 	[Header("Инфо блок")]
 	[SerializeField] private TextMeshProUGUI textNameUser;
 	[SerializeField] private TextMeshProUGUI textCareerUser;
+
+	[Header("Подсветка алертов")]
+	[SerializeField] private Color colorAlertSuccess;
+	[SerializeField] private Color colorTextAlertSuccess;
+	[SerializeField] private Color colorAlertFailed;
+	[SerializeField] private Color colorTextAlertFailed;
+
+	private Coroutine alertCorutine;
+	private Dictionary<string, int> constructions = new Dictionary<string, int>();
 
 
 	private void Awake()
@@ -37,7 +47,67 @@ public class ScreenMainMenu : MonoBehaviour
 
 	private void OnEnable()
 	{
-		alertAttention.gameObject.SetActive(false);
+		HideAttention();
+		ButtonSetActiveStatusWork();
+		StartCoroutine(SendRequestDataConstructions());
+	}
+
+	private IEnumerator SendRequestDataConstructions()
+	{
+		DataConstructionsRequest dataConstructions = Requests.Instance.dataConstructionsRequest;
+		yield return StartCoroutine(dataConstructions.SendRequest());
+
+		switch (dataConstructions.ResponseCode)
+		{
+			case Requests.RESPONSE_CODE_SUCCESS:
+				FillDropdownConstructions(dataConstructions.ResultArray);
+				Debug.Log("База загружена");
+				break;
+			case Requests.RESPONSE_CODE_BAD_REQUEST:
+				ShowAttention("! ошибка 400 !");
+				Debug.LogError("ошибка 400");
+				break;
+			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
+				ShowAttention("! сервер неактивен !");
+				Debug.LogError("сервер неактивен");
+				break;
+		}
+	}
+
+	private void FillDropdownConstructions(DataConstructionRequestGet[] arrayConstructions)
+	{
+		constructions = new Dictionary<string, int>();
+		for (int i = 0; i < arrayConstructions.Length; i++)
+		{
+			for (int j = i + 1; j < arrayConstructions.Length - 1; j++)
+			{
+				if(arrayConstructions[i].id < arrayConstructions[j + 1].id)
+				{
+					DataConstructionRequestGet tmp = arrayConstructions[i];
+					arrayConstructions[i] = arrayConstructions[j + 1];
+					arrayConstructions[j + 1] = tmp;
+				}
+			}
+		}
+
+		List<TMP_Dropdown.OptionData> listOptions = new List<TMP_Dropdown.OptionData>();
+		for (int i = 0; i < arrayConstructions.Length; i++)
+		{
+			TMP_Dropdown.OptionData newItem = new TMP_Dropdown.OptionData();
+			newItem.text = arrayConstructions[i].name;
+			listOptions.Add(newItem);
+			constructions.Add(arrayConstructions[i].name, arrayConstructions[i].id);
+		}
+
+		dropdownConstructions.ClearOptions();
+		dropdownConstructions.AddOptions(listOptions);
+	}
+
+	private void ButtonSetActiveStatusWork()
+	{
+		buttonStartWork.gameObject.SetActive(!Prefs.IsUserWork);
+		buttonStopWork.gameObject.SetActive(Prefs.IsUserWork);
+		dropdownConstructions.interactable = !Prefs.IsUserWork;
 	}
 
 	private void OnClickButtonBack()
@@ -54,15 +124,23 @@ public class ScreenMainMenu : MonoBehaviour
 	private IEnumerator SendRequestSOS()
 	{
 		SosRequest sos = Requests.Instance.sosRequest;
-		yield return StartCoroutine(sos.SendRequest());
+		if (!constructions.ContainsKey(dropdownConstructions.captionText.text))
+		{
+			ShowAttention("! объект не найден !");
+			yield break;
+		}
+
+		yield return StartCoroutine(sos.SendRequest(constructions[dropdownConstructions.captionText.text]));
 
 		switch (sos.ResponseCode)
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
-				ShowAttention("! сигнал отправлен диспетчеру !");
+				ShowAttention("! сигнал отправлен диспетчеру !", true);
+				Debug.Log("сигнал отправлен диспетчеру");
 				break;
 			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
 				ShowAttention("! сервер неактивен !");
+				Debug.LogError("сервер неактивен");
 				break;
 		}
 	}
@@ -75,24 +153,38 @@ public class ScreenMainMenu : MonoBehaviour
 	private IEnumerator SendRequestStartWork()
 	{
 		WorkRequest work = Requests.Instance.workRequest;
-		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.START_WORK));
+		if (!constructions.ContainsKey(dropdownConstructions.captionText.text))
+		{
+			ShowAttention("! объект не найден !");
+			yield break;
+		}
+
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.START_WORK, constructions[dropdownConstructions.captionText.text]));
 
 		switch (work.ResponseCode)
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
-				GeneralJava.work.Start();
-				Prefs.IsUserWork = true;
-				Prefs.DateStartWork = DateTime.Now;
-				SetButtonWork(true);
-				ShowAttention("! смена началась !");
+				StartWork();
+				ShowAttention("! смена началась !", true);
+				Debug.Log("смена началась");
 				break;
 			case Requests.RESPONSE_CODE_BAD_REQUEST:
+				StartWork();
 				ShowAttention("! вы уже работаете !");
 				break;
 			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
 				ShowAttention("! сервер неактивен !");
 				break;
 		}
+	}
+
+	private void StartWork()
+	{
+		GeneralJava.work.Start();
+		dropdownConstructions.interactable = false;
+		Prefs.IsUserWork = true;
+		Prefs.DateStartWork = DateTime.Now;
+		SetButtonWork(true);
 	}
 
 	private void OnClickButtonStopWork()
@@ -103,25 +195,39 @@ public class ScreenMainMenu : MonoBehaviour
 	private IEnumerator SendRequestStopWork()
 	{
 		WorkRequest work = Requests.Instance.workRequest;
-		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.STOP_WORK));
+
+		if (!constructions.ContainsKey(dropdownConstructions.captionText.text))
+		{
+			ShowAttention("! объект не найден !");
+			yield break;
+		}
+
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.STOP_WORK, constructions[dropdownConstructions.captionText.text]));
 
 		switch (work.ResponseCode)
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
-				GeneralJava.work.Stop();
-				Prefs.IsUserWork = false;
-				Prefs.DateStopWork = DateTime.Now;
-				Prefs.LastTimeWork = (float)(Prefs.DateStopWork - Prefs.DateStartWork).TotalHours;
-				SetButtonWork(false);
-				ShowAttention("! смена началась !");
+				StopWork();
+				ShowAttention("! смена закончилась !", true);
 				break;
 			case Requests.RESPONSE_CODE_BAD_REQUEST:
-				ShowAttention("! вы уже работаете !");
+				StopWork();
+				ShowAttention("! вы уже закончили работать !");
 				break;
 			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
 				ShowAttention("! сервер неактивен !");
 				break;
 		}
+	}
+
+	private void StopWork()
+	{
+		GeneralJava.work.Stop();
+		dropdownConstructions.interactable = true;
+		Prefs.IsUserWork = false;
+		Prefs.DateStopWork = DateTime.Now;
+		Prefs.LastTimeWork = (float)(Prefs.DateStopWork - Prefs.DateStartWork).TotalHours;
+		SetButtonWork(false);
 	}
 
 	private void SetButtonWork(bool isStart)
@@ -140,10 +246,21 @@ public class ScreenMainMenu : MonoBehaviour
 		nextScreen.SetActive(true);
 	}
 
-	private void ShowAttention(string attentionText)
+	private void ShowAttention(string attentionText, bool isSuccess = false)
 	{
+		if(alertCorutine != null) StopCoroutine(alertCorutine);
+
+		alertAttention.transform.parent.GetComponent<Image>().color = isSuccess ? colorAlertSuccess : colorAlertFailed;
+		alertAttention.color = isSuccess ? colorTextAlertSuccess : colorTextAlertFailed;
 		alertAttention.text = attentionText;
 		alertAttention.transform.parent.gameObject.SetActive(true);
+		alertCorutine = StartCoroutine(LateHideAttention());
+	}
+
+	private IEnumerator LateHideAttention()
+	{
+		yield return new WaitForSeconds(5f);
+		HideAttention();
 	}
 
 	private void HideAttention()

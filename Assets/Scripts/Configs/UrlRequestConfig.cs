@@ -9,6 +9,7 @@ public class UrlRequestConfig : ScriptableObject
 	[SerializeField] private string urlLogIn;
 	[SerializeField] private string urlGPS;
 	[SerializeField] private string urlWork;
+	[SerializeField] private string urlDataObject;
 
 	[Header("URL для пинга")]
 	[SerializeField] private string urlTest;
@@ -17,5 +18,6 @@ public class UrlRequestConfig : ScriptableObject
 	public string UrlLogIn => urlLogIn;
 	public string UrlGPS => urlGPS;
 	public string UrlWork => urlWork;
+	public string UrlDataObject => urlDataObject;
 	public string UrlTest => urlTest;
 }

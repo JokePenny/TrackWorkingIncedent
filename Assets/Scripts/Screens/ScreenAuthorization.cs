@@ -21,6 +21,7 @@ public class ScreenAuthorization : MonoBehaviour
 	[SerializeField] private Button buttonBack;
 	[SerializeField] private Button buttonEnter;
 	[SerializeField] private Button buttonEnterCatcher;
+	[SerializeField] private bool isDebug = false;
 
 	private Regex regex = new Regex(@"^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$");
 
@@ -36,10 +37,10 @@ public class ScreenAuthorization : MonoBehaviour
 
 	private void OnEnable()
 	{
-		inputFieldEmail.text = "";
-		inputFieldPassword.text = "";
-		buttonEnter.interactable = false;
-		buttonEnterCatcher.gameObject.SetActive(true);
+		inputFieldEmail.text = isDebug ? "vashov@gmail.com" : "";
+		inputFieldPassword.text = isDebug ? "Qwerty_12345" : "";
+		buttonEnter.interactable = isDebug ? true : false;
+		buttonEnterCatcher.gameObject.SetActive(isDebug ? false : true);
 
 		HideAttention();
 	}
@@ -96,7 +97,13 @@ public class ScreenAuthorization : MonoBehaviour
 			return;
 		}
 
-		if(string.IsNullOrEmpty(inputFieldPassword.text))
+		if (!ParseEmail(inputFieldEmail.text))
+		{
+			ShowAttention("! почта неверного формата !");
+			return;
+		}
+
+		if (string.IsNullOrEmpty(inputFieldPassword.text))
 		{
 			ShowAttention("! не заполнен пароль !");
 			return;

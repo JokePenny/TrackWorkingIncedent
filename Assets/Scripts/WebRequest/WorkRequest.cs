@@ -14,17 +14,17 @@ public class WorkRequest : MonoBehaviour
 	public string ResultLog { get; private set; }
 	public int ResponseCode { get; private set; }
 
-	public IEnumerator SendRequest(StatusWork status)
+	public IEnumerator SendRequest(StatusWork status, int constructionId)
 	{
-		WorkRequestSend sos = new WorkRequestSend(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"), status);
+		WorkRequestSend sos = new WorkRequestSend(DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss"), status, constructionId);
 		string jsonString = JsonUtility.ToJson(sos);
 
 		string url = Requests.Instance.urlRequestConfig.UrlWork;
 
 		UnityWebRequest uwr = new UnityWebRequest(url, "POST");
 		byte[] jsonToSend = new System.Text.UTF8Encoding().GetBytes(jsonString);
-		uwr.uploadHandler = (UploadHandler)new UploadHandlerRaw(jsonToSend);
-		uwr.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+		uwr.uploadHandler = new UploadHandlerRaw(jsonToSend);
+		uwr.downloadHandler = new DownloadHandlerBuffer();
 		uwr.SetRequestHeader("Content-Type", "application/json");
 		uwr.SetRequestHeader("api-key", Prefs.ApiKey);
 
@@ -49,10 +49,12 @@ public class WorkRequest : MonoBehaviour
 	{
 		public string date;
 		public StatusWork type;
-		public WorkRequestSend(string date, StatusWork type)
+		public int constructionId;
+		public WorkRequestSend(string date, StatusWork type, int constructionId)
 		{
 			this.date = date;
 			this.type = type;
+			this.constructionId = constructionId;
 		}
 	}
 }
