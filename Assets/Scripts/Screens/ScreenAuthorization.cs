@@ -119,6 +119,12 @@ public class ScreenAuthorization : MonoBehaviour
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
 				GeneralJava.permission.GetPermissionGeometria();
+
+				screenMainMenu.SetInfouser(
+					authorization.Result.firstName, 
+					authorization.Result.secondName, authorization.Result.patronymic, 
+					authorization.Result.professionTitle);
+
 				ShowNextScreen(screenMainMenu.gameObject);
 				Hide();
 				break;

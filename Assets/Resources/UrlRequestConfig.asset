@@ -17,4 +17,5 @@ MonoBehaviour:
   urlGPS: https://bittech.xyz/api/gps/add
   urlWork: https://bittech.xyz/api/shift/add
   urlDataObject: https://bittech.xyz/api/Construction/list-base-info
+  urlRegistration: https://bittech.xyz/Identity/Account/Register
   urlTest: https://bittech.xyz/api/auth/test

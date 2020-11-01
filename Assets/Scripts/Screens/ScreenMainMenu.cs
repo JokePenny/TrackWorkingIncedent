@@ -48,8 +48,14 @@ public class ScreenMainMenu : MonoBehaviour
 	private void OnEnable()
 	{
 		HideAttention();
-		ButtonSetActiveStatusWork();
+		SetButtonWork(Prefs.IsUserWork);
 		StartCoroutine(SendRequestDataConstructions());
+	}
+
+	public void SetInfouser(string userFirstName, string userSecondName, string userThirdName, string professionTitle)
+	{
+		textNameUser.text = userFirstName + " " + userSecondName + " " + userThirdName;
+		textCareerUser.text = professionTitle;
 	}
 
 	private IEnumerator SendRequestDataConstructions()
@@ -103,13 +109,6 @@ public class ScreenMainMenu : MonoBehaviour
 		dropdownConstructions.AddOptions(listOptions);
 	}
 
-	private void ButtonSetActiveStatusWork()
-	{
-		buttonStartWork.gameObject.SetActive(!Prefs.IsUserWork);
-		buttonStopWork.gameObject.SetActive(Prefs.IsUserWork);
-		dropdownConstructions.interactable = !Prefs.IsUserWork;
-	}
-
 	private void OnClickButtonBack()
 	{
 		ShowNextScreen(screenEnterApp.gameObject);
@@ -158,18 +157,19 @@ public class ScreenMainMenu : MonoBehaviour
 			ShowAttention("! объект не найден !");
 			yield break;
 		}
+		int constructionId = constructions[dropdownConstructions.captionText.text];
 
-		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.START_WORK, constructions[dropdownConstructions.captionText.text]));
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.START_WORK, constructionId));
 
 		switch (work.ResponseCode)
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
-				StartWork();
+				StartWork(constructionId);
 				ShowAttention("! смена началась !", true);
 				Debug.Log("смена началась");
 				break;
 			case Requests.RESPONSE_CODE_BAD_REQUEST:
-				StartWork();
+				StartWork(constructionId);
 				ShowAttention("! вы уже работаете !");
 				break;
 			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
@@ -178,9 +178,9 @@ public class ScreenMainMenu : MonoBehaviour
 		}
 	}
 
-	private void StartWork()
+	private void StartWork(int constructionId)
 	{
-		GeneralJava.work.Start();
+		GeneralJava.work.Start(constructionId);
 		dropdownConstructions.interactable = false;
 		Prefs.IsUserWork = true;
 		Prefs.DateStartWork = DateTime.Now;
@@ -201,17 +201,18 @@ public class ScreenMainMenu : MonoBehaviour
 			ShowAttention("! объект не найден !");
 			yield break;
 		}
+		int constructionId = constructions[dropdownConstructions.captionText.text];
 
-		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.STOP_WORK, constructions[dropdownConstructions.captionText.text]));
+		yield return StartCoroutine(work.SendRequest(WorkRequest.StatusWork.STOP_WORK, constructionId));
 
 		switch (work.ResponseCode)
 		{
 			case Requests.RESPONSE_CODE_SUCCESS:
-				StopWork();
+				StopWork(constructionId);
 				ShowAttention("! смена закончилась !", true);
 				break;
 			case Requests.RESPONSE_CODE_BAD_REQUEST:
-				StopWork();
+				StopWork(constructionId);
 				ShowAttention("! вы уже закончили работать !");
 				break;
 			case Requests.RESPONSE_CODE_BAD_GATEAWAY:
@@ -220,9 +221,9 @@ public class ScreenMainMenu : MonoBehaviour
 		}
 	}
 
-	private void StopWork()
+	private void StopWork(int constructionId)
 	{
-		GeneralJava.work.Stop();
+		GeneralJava.work.Stop(constructionId);
 		dropdownConstructions.interactable = true;
 		Prefs.IsUserWork = false;
 		Prefs.DateStopWork = DateTime.Now;
@@ -234,6 +235,8 @@ public class ScreenMainMenu : MonoBehaviour
 	{
 		buttonStartWork.gameObject.SetActive(!isStart);
 		buttonStopWork.gameObject.SetActive(isStart);
+		buttonBack.gameObject.SetActive(!isStart);
+		dropdownConstructions.interactable = !isStart;
 	}
 
 	private void Hide()

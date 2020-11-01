@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class StartWorkJava
 {
-	public void Start()
+	public void Start(int constructionId)
 	{
 		if (Application.platform == RuntimePlatform.Android)
 		{
-			string apiKey = Prefs.ApiKey;
-			if (!string.IsNullOrEmpty(apiKey)) GeneralJava.PluginInstance.Call("setApiKey", apiKey);
+			string apiKey = Requests.ApiKey;
+			GeneralJava.PluginInstance.Call("setApiKey", apiKey);
+			GeneralJava.PluginInstance.Call<int>("setIdConstr", constructionId);
 
 			if (GeneralJava.PluginInstance.Call<int>("startAccelerometerService") == 1) Debug.Log("Start AccelerometerService");
 			else Debug.LogError("Not Start AccelerometerService");
@@ -19,12 +20,13 @@ public class StartWorkJava
 		}
 	}
 
-	public void Stop()
+	public void Stop(int constructionId)
 	{
 		if (Application.platform == RuntimePlatform.Android)
 		{
-			string apiKey = Prefs.ApiKey;
-			if (!string.IsNullOrEmpty(apiKey)) GeneralJava.PluginInstance.Call("setApiKey", apiKey);
+			string apiKey = Requests.ApiKey;
+			GeneralJava.PluginInstance.Call("setApiKey", apiKey);
+			GeneralJava.PluginInstance.Call<int>("setIdConstr", constructionId);
 
 			if (GeneralJava.PluginInstance.Call<int>("stopAccelerometerService") == 1) Debug.Log("Stop AccelerometerService");
 			else Debug.LogError("Not Stop stopAccelerometerService");

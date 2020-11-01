@@ -6,6 +6,7 @@ public class Requests : MonoBehaviour
 	public const int RESPONSE_CODE_BAD_REQUEST = 400;
 	public const int RESPONSE_CODE_FORBIDEN = 403;
 	public const int RESPONSE_CODE_BAD_GATEAWAY = 502;
+	public static string ApiKey { get; set; }
 
 	public static Requests Instance { get; private set; }
 	public UrlRequestConfig urlRequestConfig { get; private set; }

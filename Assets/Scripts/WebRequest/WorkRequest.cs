@@ -26,7 +26,7 @@ public class WorkRequest : MonoBehaviour
 		uwr.uploadHandler = new UploadHandlerRaw(jsonToSend);
 		uwr.downloadHandler = new DownloadHandlerBuffer();
 		uwr.SetRequestHeader("Content-Type", "application/json");
-		uwr.SetRequestHeader("api-key", Prefs.ApiKey);
+		uwr.SetRequestHeader("api-key", Requests.ApiKey);
 
 		Debug.Log(jsonString);
 		yield return uwr.SendWebRequest();

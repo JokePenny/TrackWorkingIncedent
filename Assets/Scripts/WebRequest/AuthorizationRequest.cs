@@ -39,7 +39,7 @@ public class AuthorizationRequest : MonoBehaviour
 			Result = JsonUtility.FromJson<AuthorizationRequestGet>(uwr.downloadHandler.text);
 
 			Prefs.EmailUser = Result.email;
-			Prefs.ApiKey = Result.apiKey;
+			Requests.ApiKey = Result.apiKey;
 			Prefs.DateCreatedUser = DateTime.Parse(Result.created);
 		}
 	}
@@ -59,6 +59,10 @@ public class AuthorizationRequest : MonoBehaviour
 	[Serializable]
 	public struct AuthorizationRequestGet
 	{
+		public string firstName;
+		public string secondName;
+		public string patronymic;
+		public string professionTitle;
 		public string email;
 		public string created;
 		public string apiKey;
